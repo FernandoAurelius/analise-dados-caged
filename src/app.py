@@ -85,6 +85,12 @@ class CAGEDApp:
         
         # Exibe a página selecionada
         page = self.pages[selection]
+
+        try:
+            st.write(f"SECRET_TEST: {st.secrets['PROJECT_ID'][:3]}...")
+            st.success("Secrets estão configurados corretamente!")
+        except Exception as e:  
+            st.error(f"Erro ao acessar secrets: {e}")
         page.render()
 
 
