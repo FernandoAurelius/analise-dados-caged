@@ -1,8 +1,6 @@
 import pandas as pd
 import basedosdados as bd
 from typing import Dict, Optional, List, Union
-from dotenv import load_dotenv
-import os
 
 
 class DataLoader:
