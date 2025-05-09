@@ -13,14 +13,11 @@ class DataLoader:
     sendo responsável apenas por operações de carregamento de dados.
     """
     
-    def __init__(self) -> None:
+    def __init__(self, project_id) -> None:
         """
         Inicializa o DataLoader com valores padrão.
         """
-        
-        # Carrega variáveis de ambiente do arquivo .env
-        load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
-        self.project_id = os.getenv('PROJECT_ID')
+        self.project_id = project_id
     
     def load_caged_data(self, 
                         year: Union[int, List[int]], 

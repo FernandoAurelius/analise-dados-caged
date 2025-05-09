@@ -24,7 +24,7 @@ class CAGEDApp:
         self._config_streamlit()
         
         # Inicializa componentes de dados
-        self.data_loader = DataLoader()
+        self.data_loader = DataLoader(project_id=st.secrets["PROJECT_ID"])
         self.data_processor = DataProcessor()
         
         # Inicializa páginas
