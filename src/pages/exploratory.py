@@ -48,7 +48,7 @@ class ExploratoryPage:
         st.write("## Configuração de Filtros")
         
         with st.expander("Filtros de Dados", expanded=True):
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3) # Adicionado col3 para o botão de limpar
             
             with col1:
                 # Filtro de ano
@@ -71,53 +71,72 @@ class ExploratoryPage:
                 
                 # Filtro de limite de linhas
                 row_limit = st.number_input("Limite de Linhas", min_value=100, max_value=10000, value=1000, step=100)
-        
-        # Preparação dos parâmetros para consulta
-        location = {}
-        filters = {}
-        
-        # Converte o mês selecionado de nome para número
-        selected_month = None
-        if selected_month_name != 'Todos':
-            for m in months:
-                if m[1] == selected_month_name:
-                    selected_month = m[0]
-                    break
-        
-        # Adiciona filtro de UF se não for 'Todos'
-        if selected_state != 'Todos':
-            location['uf'] = selected_state
-        
-        # Botão para carregar os dados
-        if st.button("Carregar Dados"):
-            with st.spinner("Carregando dados do CAGED..."):
-                # Carrega os dados com base nos filtros selecionados
-                df = self.data_loader.load_caged_data(
-                    year=selected_year, 
-                    month=selected_month,
-                    location=location,
-                    filters=filters,
-                    limit=row_limit
-                )
+
+            with col3: # Coluna para botões de ação
+                st.write("") # Espaçador para alinhar
+                st.write("") # Espaçador para alinhar
+                if st.button("Carregar Dados", key="load_data"):
+                    # Preparação dos parâmetros para consulta
+                    location = {}
+                    filters = {}
+                    
+                    # Converte o mês selecionado de nome para número
+                    selected_month = None
+                    if selected_month_name != 'Todos':
+                        for m in months:
+                            if m[1] == selected_month_name:
+                                selected_month = m[0]
+                                break
+                    
+                    # Adiciona filtro de UF se não for 'Todos'
+                    if selected_state != 'Todos':
+                        location['uf'] = selected_state
+                    
+                    with st.spinner("Carregando dados do CAGED..."):
+                        # Carrega os dados com base nos filtros selecionados
+                        df = self.data_loader.load_caged_data(
+                            year=selected_year, 
+                            month=selected_month,
+                            location=location,
+                            filters=filters,
+                            limit=row_limit
+                        )
+                        
+                        # Processa os dados carregados
+                        if not df.empty:
+                            processed_df = self.data_processor.process_data(df)
+                            
+                            # Armazena os dados processados na sessão para uso em outras partes
+                            st.session_state['caged_data'] = processed_df
+                            
+                            # Mostra informações sobre os dados carregados
+                            st.success(f"Dados carregados com sucesso! {len(processed_df)} registros encontrados.")
+                            # st.rerun() # Força o rerender para exibir os dados imediatamente
+                        else:
+                            st.error("Não foi possível carregar os dados. Verifique os filtros e tente novamente.")
+                            if 'caged_data' in st.session_state:
+                                del st.session_state['caged_data'] # Limpa dados antigos se o carregamento falhar
                 
-                # Processa os dados carregados
-                if not df.empty:
-                    processed_df = self.data_processor.process_data(df)
-                    
-                    # Armazena os dados processados na sessão para uso em outras partes
-                    st.session_state['caged_data'] = processed_df
-                    
-                    # Mostra informações sobre os dados carregados
-                    st.success(f"Dados carregados com sucesso! {len(processed_df)} registros encontrados.")
-                    
-                    # Renderiza a visualização de dados
-                    self._render_data_view(processed_df)
-                    
-                    # Seção de visualizações
-                    self._render_visualizations(processed_df)
-                else:
-                    st.error("Não foi possível carregar os dados. Verifique os filtros e tente novamente.")
-    
+                if st.button("Limpar Dados e Filtros", key="clear_data"):
+                    if 'caged_data' in st.session_state:
+                        del st.session_state['caged_data']
+                    st.info("Dados e filtros limpos. Configure e carregue novos dados.")
+                    st.rerun()
+
+        # Verifica se os dados estão na sessão e os exibe
+        if 'caged_data' in st.session_state and not st.session_state['caged_data'].empty:
+            processed_df = st.session_state['caged_data']
+            
+            # Renderiza a visualização de dados
+            self._render_data_view(processed_df)
+            
+            # Seção de visualizações
+            self._render_visualizations(processed_df)
+        elif 'caged_data' in st.session_state and st.session_state['caged_data'].empty:
+            st.warning("Os filtros aplicados não retornaram dados. Tente carregar com filtros diferentes.")
+        else:
+            st.info("Configure os filtros e clique em 'Carregar Dados' para iniciar a análise.")
+
     def _render_visualizations(self, df: pd.DataFrame) -> None:
         """
         Renderiza a seção de visualizações e gráficos.

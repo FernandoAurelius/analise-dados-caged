@@ -46,9 +46,10 @@ class HomePage:
         Em cada seção, você encontrará controles interativos para filtrar e visualizar os dados de acordo com suas necessidades.
         """)
         
-        st.image('https://www.gov.br/trabalho-e-emprego/pt-br/composicao/orgaos-especificos/secretaria-de-trabalho/imgs-st/banner-caged.png', 
-                caption='Fonte: Ministério do Trabalho e Emprego', 
-                use_column_width=True)
+        st.image(
+            'https://sescap-pr.org.br/wp-content/uploads/2025/04/01-04-caged.jpg', 
+             caption='Fonte: Ministério do Trabalho e Emprego'
+        )
         
         col1, col2, col3 = st.columns(3)
         
